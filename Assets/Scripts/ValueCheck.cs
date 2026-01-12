@@ -38,7 +38,7 @@ public class ValueCheck : MonoBehaviour
         {
             averageRecentRating.score = 4;
         }
-        Debug.Log("myFloat: " + myFloat);
+        //Debug.Log("myFloat: " + myFloat);
     }
 
     private void StartIncreasingFloatValue()

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class ZumbaController : MonoBehaviour {
 
-  public GameObject VolumetricObject;
+  //public GameObject VolumetricObject;
 
   public List<GameObject> songStanding;
   public List<GameObject> songSitting;
@@ -33,7 +33,7 @@ public class ZumbaController : MonoBehaviour {
   void Start() {
     songTimer = 3;
     isFinished = false;
-    VolumetricObject = GameObject.Find("VolumetricSDK");
+    //VolumetricObject = GameObject.Find("VolumetricSDK");
     }
 
   // Update is called once per frame
@@ -49,7 +49,7 @@ public class ZumbaController : MonoBehaviour {
           Menu.song++;//boot next song for next load
           //if (Menu.song == findMeScene) {
             int rand = Random.Range(6,11);
-            Debug.Log("memememememememeemememememememe:" + rand);
+            //Debug.Log("memememememememeemememememememe:" + rand);
             nextScene[4] = rand;
             //SceneManager.LoadScene(rand);
           //}
@@ -66,7 +66,7 @@ public class ZumbaController : MonoBehaviour {
     }
   }
   void StartSong() {
-        VolumetricObject.SetActive(true);
+        //VolumetricObject.SetActive(true);
         if (Menu.isStanding) {//if standing based
       songStanding[Menu.song].SetActive(true);//enable song
       currentSong = songStanding[Menu.song];
