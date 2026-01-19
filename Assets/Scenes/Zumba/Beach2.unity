@@ -151,7 +151,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 409460, guid: 83e00ee61e401534699048e56c0a1bc9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.38
+      value: -1.083
       objectReference: {fileID: 0}
     - target: {fileID: 409460, guid: 83e00ee61e401534699048e56c0a1bc9, type: 3}
       propertyPath: m_LocalPosition.y
@@ -159,7 +159,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 409460, guid: 83e00ee61e401534699048e56c0a1bc9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.194
+      value: 2.265
       objectReference: {fileID: 0}
     - target: {fileID: 409460, guid: 83e00ee61e401534699048e56c0a1bc9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1390,6 +1390,9 @@ MonoBehaviour:
   - {fileID: -1131340763, guid: 290ca7062758bc64bacf00cdffa9caab, type: 3}
   - {fileID: 713157483, guid: 290ca7062758bc64bacf00cdffa9caab, type: 3}
   - {fileID: 500680177, guid: 290ca7062758bc64bacf00cdffa9caab, type: 3}
+  zumbaController: {fileID: 0}
+  pulseScale: 1.1
+  pulseDuration: 0.2
 --- !u!114 &270194075
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4555,6 +4558,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startTimeSeconds: 0
+  startTimeSeconds2: 0
 --- !u!328 &1161077659
 VideoPlayer:
   m_ObjectHideFlags: 0

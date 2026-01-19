@@ -44,6 +44,7 @@ public class ZumbaController : MonoBehaviour {
         StartSong();
       }
       if (!currentSong.GetComponent<AudioSource>().isPlaying || Input.GetKeyDown(KeyCode.S)) {//if song audio is finished
+        isFinished = true;
         songTimer -= Time.deltaTime;//start a 3 second countdown delay
         if (songTimer <= 0 || Input.GetKeyDown(KeyCode.S)) {//when delay is finished
           Menu.song++;//boot next song for next load

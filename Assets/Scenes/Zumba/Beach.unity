@@ -151,7 +151,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 409460, guid: 83e00ee61e401534699048e56c0a1bc9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.38
+      value: -1.083
       objectReference: {fileID: 0}
     - target: {fileID: 409460, guid: 83e00ee61e401534699048e56c0a1bc9, type: 3}
       propertyPath: m_LocalPosition.y
@@ -159,7 +159,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 409460, guid: 83e00ee61e401534699048e56c0a1bc9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.194
+      value: 2.265
       objectReference: {fileID: 0}
     - target: {fileID: 409460, guid: 83e00ee61e401534699048e56c0a1bc9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -804,6 +804,9 @@ MonoBehaviour:
   - {fileID: -1131340763, guid: 290ca7062758bc64bacf00cdffa9caab, type: 3}
   - {fileID: 713157483, guid: 290ca7062758bc64bacf00cdffa9caab, type: 3}
   - {fileID: 500680177, guid: 290ca7062758bc64bacf00cdffa9caab, type: 3}
+  zumbaController: {fileID: 270194075}
+  pulseScale: 1.1
+  pulseDuration: 0.2
 --- !u!114 &270194075
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1291,6 +1294,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startTimeSeconds: 0
+  startTimeSeconds2: 0
 --- !u!1 &449284077
 GameObject:
   m_ObjectHideFlags: 0
@@ -4345,7 +4349,7 @@ RectTransform:
   m_GameObject: {fileID: 1156990482}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.92929, y: 0.92929, z: 0.92929}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 181240255}
@@ -4369,7 +4373,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

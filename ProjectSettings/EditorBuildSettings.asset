@@ -62,4 +62,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Zumba/SnowMountains2.unity
     guid: 5cd5085e4c252a54280834c0c5b31a72
+  - enabled: 1
+    path: Assets/Scenes/Zumba/BeachMulti.unity
+    guid: 8c8d000b013942847920e7993af3c098
+  - enabled: 1
+    path: Assets/Scenes/Zumba/ParkMulti.unity
+    guid: ea04f258d96e77f4fbca34a559609fdb
+  - enabled: 1
+    path: Assets/Scenes/Zumba/SnowMountainsMulti.unity
+    guid: 2eceb3b8db2a83b46a2ec01d92303aa4
   m_configObjects: {}
