@@ -13,6 +13,7 @@ public class CustomVideoPlayer : MonoBehaviour
     bool multiplayer;
 
     bool seekCompleted;
+    public bool songStarted = false;
 
     private void Awake()
     {
@@ -42,7 +43,7 @@ public class CustomVideoPlayer : MonoBehaviour
         }
         else
         {
-            PlayOneAtTime(startTimeSeconds);
+            StartCoroutine(PlayOneAtTime(startTimeSeconds));
         }
     }
 
@@ -88,6 +89,7 @@ public class CustomVideoPlayer : MonoBehaviour
         player.Play();
         player2.Play();
         audioSource.Play();
+        songStarted = true;
     }
 
     IEnumerator PlayOneAtTime(float startAtSeconds)
@@ -127,6 +129,7 @@ public class CustomVideoPlayer : MonoBehaviour
         Debug.Log("Seek completed. Playing video and audio.");
         player.Play();
         audioSource.Play();
+        songStarted = true;
     }
 
     void OnSeekCompleted(VideoPlayer source)

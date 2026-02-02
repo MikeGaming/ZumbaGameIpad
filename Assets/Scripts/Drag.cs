@@ -3,28 +3,59 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Drag : MonoBehaviour
+public class Drag : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
     public Canvas canvas;
     public bool locked = false;
     public bool colliding = false;
-    Collider2D other = new Collider2D();
+    Collider2D other = null;
     public Jigsaw manager;
 
+    bool isDragging = false;
+
+    // Backwards-compatible EventTrigger entry point (optional)
     public void DragHandler(BaseEventData data)
     {
-        if (!locked)
+        // If you still call this via an EventTrigger, forward to OnDrag
+        if (data is PointerEventData pd)
+            OnDrag(pd);
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (locked) return;
+        isDragging = true;
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (!isDragging || locked) return;
+
+        Vector2 pos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            (RectTransform)canvas.transform,
+            eventData.position,
+            canvas.worldCamera,
+            out pos);
+
+        transform.position = canvas.transform.TransformPoint(pos);
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        isDragging = false;
+
+        // Snap to target if colliding with matching slot
+        if (other != null && !locked)
         {
-            PointerEventData pointerData = (PointerEventData)data;
-
-            Vector2 pos;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                (RectTransform)canvas.transform,
-                pointerData.position,
-                canvas.worldCamera,
-                out pos);
-
-            transform.position = canvas.transform.TransformPoint(pos);
+            if (other.gameObject.name == gameObject.name)
+            {
+                transform.position = other.gameObject.transform.position;
+                locked = true;
+                if (manager != null)
+                    manager.lockedCount++;
+                Debug.Log("Locked");
+            }
         }
     }
 
@@ -33,22 +64,14 @@ public class Drag : MonoBehaviour
         colliding = true;
         other = collision;
     }
+
     void OnTriggerExit2D(Collider2D collision)
     {
-        colliding = false;
-        other = new Collider2D();
-    }
-    private void Update()
-    {
-        if (Input.GetKeyUp(KeyCode.Mouse0) && other != null)
+        // clear only if exiting the same collider (defensive)
+        if (other == collision)
         {
-            if (other.gameObject.name == gameObject.name && !locked)
-            {
-                transform.position = other.gameObject.transform.position;
-                locked = true;
-                manager.lockedCount++;
-                Debug.Log("Locked");
-            }
+            colliding = false;
+            other = null;
         }
     }
 }

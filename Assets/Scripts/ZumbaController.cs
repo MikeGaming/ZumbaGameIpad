@@ -17,8 +17,10 @@ public class ZumbaController : MonoBehaviour {
 
   bool songStarted;
   public GameObject currentSong;
+public ZumbaFeedback feedback;
+    bool feedbackTriggered = false;
 
-  public float timer;
+    public float timer;
   public TextMeshProUGUI text;
   public bool isFinished;
   public float songTimer = 3;
@@ -34,6 +36,8 @@ public class ZumbaController : MonoBehaviour {
     songTimer = 3;
     isFinished = false;
     //VolumetricObject = GameObject.Find("VolumetricSDK");
+    feedback = FindObjectOfType<ZumbaFeedback>();
+        feedbackTriggered = false;
     }
 
   // Update is called once per frame
@@ -42,22 +46,33 @@ public class ZumbaController : MonoBehaviour {
       text.text = "";
       if (!songStarted) {
         StartSong();
-      }
-      if (!currentSong.GetComponent<AudioSource>().isPlaying || Input.GetKeyDown(KeyCode.S)) {//if song audio is finished
+        feedback.smallStarFillDuration = currentSong.GetComponent<AudioSource>().clip.length;
+                feedback.StartFillingNextStar();
+            }
+      if ((!currentSong.GetComponent<AudioSource>().isPlaying || Input.GetKeyDown(KeyCode.S)) && currentSong.GetComponent<CustomVideoPlayer>().songStarted) {//if song audio is finished
         isFinished = true;
-        songTimer -= Time.deltaTime;//start a 3 second countdown delay
-        if (songTimer <= 0 || Input.GetKeyDown(KeyCode.S)) {//when delay is finished
-          Menu.song++;//boot next song for next load
-          //if (Menu.song == findMeScene) {
-            int rand = Random.Range(6,11);
-            //Debug.Log("memememememememeemememememememe:" + rand);
-            nextScene[4] = rand;
-            //SceneManager.LoadScene(rand);
-          //}
-          SceneManager.LoadScene(nextScene[Menu.song]);//send to next scene
-
-        }
+        if (!feedbackTriggered)
+                {
+                    feedbackTriggered = true;
+                    feedback.TriggerStar(true);
+                }
       }
+      if (isFinished)
+            {
+                songTimer -= Time.deltaTime;//start a 3 second countdown delay
+                if (songTimer <= 0)
+                {//when delay is finished
+                    Menu.song++;//boot next song for next load
+                                //if (Menu.song == findMeScene) {
+                    int rand = Random.Range(6, 11);
+                    //Debug.Log("memememememememeemememememememe:" + rand);
+                    nextScene[4] = rand;
+                    //SceneManager.LoadScene(rand);
+                    //}
+                    SceneManager.LoadScene(nextScene[Menu.song]);//send to next scene
+
+                }
+            }
       
 
       
