@@ -193,7 +193,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &6919915
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -683,7 +682,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &213145346
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -851,7 +849,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &225824319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1037,7 +1034,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &351278601
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1262,7 +1258,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &376153742
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1372,7 +1367,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &404096544
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1482,7 +1476,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &410435847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1592,7 +1585,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &416238117
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1631,6 +1623,67 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 416238113}
   m_CullTransparentMesh: 1
+--- !u!1001 &457239808
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6974732509890196563, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_Name
+      value: SceneStarter
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196564, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: assetToLoad
+      value: 
+      objectReference: {fileID: 1387386892}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_RootOrder
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6974732509890196565, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0c2b21d69b7d7524eb688b8b270e9472, type: 3}
 --- !u!1 &545537372
 GameObject:
   m_ObjectHideFlags: 0
@@ -1702,7 +1755,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &545537377
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2116,7 +2168,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &850724589
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2226,7 +2277,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &898984413
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2336,7 +2386,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &899125299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2446,7 +2495,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &910328291
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2632,7 +2680,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &1037186941
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3021,7 +3068,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &1235161864
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3207,7 +3253,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &1282186722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3736,7 +3781,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &1411422601
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3846,7 +3890,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &1423491141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3956,7 +3999,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &1488538327
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4066,7 +4108,6 @@ MonoBehaviour:
   isFront: 0
   locked: 0
   isSelected: 0
-  kHand: {fileID: 0}
 --- !u!114 &1512788087
 MonoBehaviour:
   m_ObjectHideFlags: 0

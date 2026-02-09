@@ -49,7 +49,7 @@ public class ZumbaFeedback : MonoBehaviour
 
     [Header("Auto Praise")]
     [SerializeField] bool autoPraiseEnabled = true;
-    [SerializeField] float autoPraiseInterval = 30f; // seconds between automatic praise appearances
+    float autoPraiseInterval = 30f; // seconds between automatic praise appearances
 
     // local state: number of small stars currently shown in the corner UI
     int displayedStarCount = 0;

@@ -75,10 +75,11 @@ public ZumbaFeedback feedback;
             }
       
 
-      
+
     } else if (timer > 0) {
       timer -= Time.deltaTime;
-      text.text = timer.ToString();
+      // Display timer rounded to nearest 2 decimal places
+      text.text = timer.ToString("F2");
     }
   }
   void StartSong() {
