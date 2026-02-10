@@ -8,16 +8,17 @@ public class ZumbaFeedback : MonoBehaviour
     [Header("References")]
     [SerializeField] Sprite starSprite;
     [SerializeField] Canvas targetCanvas; // assign your UI canvas (prefer Screen Space - Overlay)
-    [SerializeField] RectTransform starContainer; // anchored bottom-right container for permanent stars
+    [SerializeField] RectTransform starOrigin; // RectTransform that acts as the star origin (first star at local 0,0)
 
     [Header("Animation Settings")]
-    [SerializeField] float flashDuration = 0.20f;
-    [SerializeField] float flashScale = 1.6f;
-    [SerializeField] float moveDuration = 0.6f;
-    [SerializeField] Vector2 largeStarSize = new Vector2(180, 180);
-    [SerializeField] Vector2 smallStarSize = new Vector2(36, 36);
-    [SerializeField] float arrangeRadius = 40f;
-    [SerializeField] int maxStars = 12;
+    float flashDuration = 1.5f;
+    float flashScale = 1.25f;
+    float moveDuration = 0.6f;
+    Vector2 largeStarSize = new Vector2(700, 700);
+    Vector2 smallStarSize = new Vector2(160, 160);
+    int maxStars = 5;
+    [Tooltip("Vertical spacing (in local rect units) between stacked small stars.")]
+    [SerializeField] float verticalSpacing = 4f;
 
     [HideInInspector] public float smallStarFillDuration = 5f; // how long it takes to fill a corner star
 
@@ -27,10 +28,15 @@ public class ZumbaFeedback : MonoBehaviour
     [SerializeField] float praiseDuration = 1.0f; // how long praise text/particle remains
     [SerializeField] float praiseMinRotation = -35f;
     [SerializeField] float praiseMaxRotation = 35f;
-    Vector2 praiseScreenPadding = new Vector2(500f, 200f);
     [SerializeField] Font praiseFont;
     [SerializeField] int praiseFontSize = 36;
     [SerializeField] Color praiseColor = Color.white;
+
+    [Header("Praise Placement")]
+    [Tooltip("Assign a single GameObject in the editor. Each child (RectTransform) of that GameObject acts as a spawn area.")]
+    [SerializeField] GameObject praiseSpawnAreasParent;
+    [Tooltip("Optional inset (local rect units) from edges when selecting a random point inside a spawn area.")]
+    [SerializeField] float praiseAreaPadding = 8f;
 
     [Header("Praise Audio")]
     [Tooltip("Optional voice lines for praises. If array length matches praisePhrases, indices will be used together; otherwise a random clip will play.")]
@@ -38,9 +44,9 @@ public class ZumbaFeedback : MonoBehaviour
     [Tooltip("Optional audio source to use for praise voice lines. If empty one will be created on this GameObject.")]
     [SerializeField] AudioSource praiseAudioSource;
 
-    [Header("Praise Animation (scale)")]
-    [SerializeField] float praiseFlashDuration = 0.20f; // total time for grow+shrink (legacy, not used for pop-in)
-    [SerializeField] float praiseFlashScale = 1.4f;     // how big it grows before returning to normal (legacy)
+    //[Header("Praise Animation (scale)")]
+    float praiseFlashDuration = 0.20f; // total time for grow+shrink (legacy, not used for pop-in)
+    float praiseFlashScale = 1f;     // how big it grows before returning to normal (legacy)
 
     [Header("Pop-in / Disappearance")]
     [SerializeField] float popInitialScale = 0.02f;      // initial tiny scale used when popping in
@@ -49,9 +55,9 @@ public class ZumbaFeedback : MonoBehaviour
 
     [Header("Auto Praise")]
     [SerializeField] bool autoPraiseEnabled = true;
-    float autoPraiseInterval = 30f; // seconds between automatic praise appearances
+    float autoPraiseInterval = 5f; // seconds between automatic praise appearances
 
-    // local state: number of small stars currently shown in the corner UI
+    // local state: number of small stars currently shown in the star origin
     int displayedStarCount = 0;
 
     // reference to the last small star that is currently filling (if any)
@@ -84,7 +90,7 @@ public class ZumbaFeedback : MonoBehaviour
 
     void OnEnable()
     {
-        // Rebuild the persistent corner stars from authoritative Menu.song value
+        // Rebuild the persistent stacked stars from authoritative Menu.song value
         RefreshStarsFromMenu();
 
         if (autoPraiseEnabled && targetCanvas != null)
@@ -112,10 +118,9 @@ public class ZumbaFeedback : MonoBehaviour
     /// <summary>
     /// Call from other scripts when a song completion should award a star.
     /// Example: FindObjectOfType&lt;ZumbaFeedback&gt;().TriggerStar(true);
-    /// New behavior:
-    /// - During the song call StartFillingNextStar() to create and begin filling a corner star.
-    /// - When the song finishes call TriggerStar(true) to animate the filled corner star moving to center,
-    ///   show particle + "You Got A Star!" text, then return to the corner.
+    /// - During the song call StartFillingNextStar() to create and begin filling a star.
+    /// - When the song finishes call TriggerStar(true) to animate the filled star moving to center,
+    ///   show particle + "You Got A Star!" text, then return to the origin.
     /// </summary>
     public void TriggerStar(bool awarded)
     {
@@ -126,20 +131,20 @@ public class ZumbaFeedback : MonoBehaviour
             return;
         }
 
-        // Animate the filled corner star moving to center and showing the celebration.
+        // Animate the filled star moving to center and showing the celebration.
         StartCoroutine(PlayFilledStarSequence());
     }
 
-    // Public API: call this during gameplay to begin filling the next corner star slowly.
+    // Public API: call this during gameplay to begin filling the next star slowly.
     public void StartFillingNextStar()
     {
-        if (starContainer == null) return;
+        if (starOrigin == null) return;
         if (displayedStarCount >= maxStars) return;
 
         // Create a new small star with fill amount 0 and begin filling it.
         Image img = InstantiateSmallStar(0f);
         displayedStarCount++;
-        ArrangeStarsInCircle();
+        ArrangeStarsInStack();
 
         // If there's already a filling star running, replace it (only one filler at a time).
         if (lastFillingStarImage != null)
@@ -173,36 +178,36 @@ public class ZumbaFeedback : MonoBehaviour
         if (canvasRT == null)
             yield break;
 
-        // Find the most recent filled star in the container (prefer last child)
-        RectTransform cornerStarRT = null;
-        Image cornerStarImg = null;
-        if (starContainer != null && starContainer.childCount > 0)
+        // Find the most recent filled star in the origin (prefer last child)
+        RectTransform originStarRT = null;
+        Image originStarImg = null;
+        if (starOrigin != null && starOrigin.childCount > 0)
         {
-            var child = starContainer.GetChild(starContainer.childCount - 1) as RectTransform;
+            var child = starOrigin.GetChild(starOrigin.childCount - 1) as RectTransform;
             if (child != null)
             {
-                cornerStarRT = child;
-                cornerStarImg = child.GetComponent<Image>();
+                originStarRT = child;
+                originStarImg = child.GetComponent<Image>();
             }
         }
 
-        // If we don't have a corner star, create one instantly filled (fallback)
-        if (cornerStarImg == null)
+        // If we don't have a star, create one instantly filled (fallback)
+        if (originStarImg == null)
         {
-            cornerStarImg = InstantiateSmallStar(1f);
+            originStarImg = InstantiateSmallStar(1f);
             displayedStarCount = Mathf.Max(displayedStarCount, 1);
-            ArrangeStarsInCircle();
-            cornerStarRT = cornerStarImg.rectTransform;
+            ArrangeStarsInStack();
+            originStarRT = originStarImg.rectTransform;
         }
 
-        // Ensure the corner star is filled
-        cornerStarImg.fillAmount = 1f;
+        // Ensure the origin star is filled
+        originStarImg.fillAmount = 1f;
 
-        // Compute canvas local coordinates for corner star
-        Vector2 containerLocalPos = cornerStarRT != null ? (Vector2)cornerStarRT.anchoredPosition : new Vector2(-arrangeRadius, -arrangeRadius);
-        Vector2 cornerCanvasLocal = ContainerLocalToCanvasLocal(containerLocalPos, canvasRT);
+        // Compute canvas local coordinates for origin star
+        Vector2 containerLocalPos = originStarRT != null ? (Vector2)originStarRT.anchoredPosition : Vector2.zero;
+        Vector2 originCanvasLocal = ContainerLocalToCanvasLocal(containerLocalPos, canvasRT);
 
-        // Create ephemeral big star at corner canvas position (will animate to center and back)
+        // Create ephemeral big star at origin canvas position (will animate to center and back)
         var movingGO = new GameObject("MovingStar", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         var movingRT = movingGO.GetComponent<RectTransform>();
         var movingImg = movingGO.GetComponent<Image>();
@@ -212,16 +217,16 @@ public class ZumbaFeedback : MonoBehaviour
         movingImg.fillAmount = 1f;
         movingRT.SetParent(canvasRT, false);
 
-        // Use largeStarSize for sizeDelta but start scaled down to match corner small star visually
+        // Use largeStarSize for sizeDelta but start scaled down to match origin small star visually
         movingRT.sizeDelta = largeStarSize;
         float smallToLarge = smallStarSize.x / largeStarSize.x;
         movingRT.localScale = Vector3.one * smallToLarge;
         movingRT.anchorMin = movingRT.anchorMax = new Vector2(0.5f, 0.5f);
         movingRT.pivot = new Vector2(0.5f, 0.5f);
-        movingRT.anchoredPosition = cornerCanvasLocal;
+        movingRT.anchoredPosition = originCanvasLocal;
         movingRT.localEulerAngles = Vector3.zero;
 
-        // Move from corner to center
+        // Move from origin to center
         Vector2 startPos = movingRT.anchoredPosition;
         Vector2 centerPos = Vector2.zero;
         float t = 0f;
@@ -293,7 +298,7 @@ public class ZumbaFeedback : MonoBehaviour
         // hold a short moment so user sees the center celebration
         yield return new WaitForSecondsRealtime(0.8f);
 
-        // scale down center particle and text then move star back to corner
+        // scale down center particle and text then move star back to origin
         if (centerParticle != null)
             StartCoroutine(ScaleAndDestroy(centerParticle, destroyScaleDuration));
         if (gotStarTextGO != null)
@@ -302,7 +307,7 @@ public class ZumbaFeedback : MonoBehaviour
         // move back
         t = 0f;
         Vector2 returnStart = movingRT.anchoredPosition;
-        Vector2 returnEnd = cornerCanvasLocal;
+        Vector2 returnEnd = originCanvasLocal;
         while (t < moveDuration * 0.5f)
         {
             t += Time.unscaledDeltaTime;
@@ -318,9 +323,9 @@ public class ZumbaFeedback : MonoBehaviour
         if (movingGO != null)
             Destroy(movingGO);
 
-        // Ensure the permanent corner star shows filled state and no temporary objects remain
-        if (cornerStarImg != null)
-            cornerStarImg.fillAmount = 1f;
+        // Ensure the permanent origin star shows filled state and no temporary objects remain
+        if (originStarImg != null)
+            originStarImg.fillAmount = 1f;
     }
 
     // small helper to create a quick pop scale for the center star
@@ -367,13 +372,19 @@ public class ZumbaFeedback : MonoBehaviour
         }
     }
 
-    // Create a praise text + particle at a random safe position on the canvas and destroy after praiseDuration
+    // Create a praise text + particle at a placement chosen randomly from the configured RectTransform child areas
+    // of the configured parent GameObject. A random point inside the chosen rect (respecting optional padding)
+    // is used as spawn location.
     void SpawnPraiseAtRandomSpot()
     {
         if (targetCanvas == null) return;
         var canvasRT = targetCanvas.GetComponent<RectTransform>();
         if (canvasRT == null) return;
         if (praisePhrases == null || praisePhrases.Length == 0) return;
+
+        // Get spawn area list from the configured parent
+        var areas = GetSpawnAreasFromParent();
+        if (areas == null || areas.Count == 0) return;
 
         GameObject praiseGO = null;
         GameObject praiseParticle = null;
@@ -386,6 +397,13 @@ public class ZumbaFeedback : MonoBehaviour
         // choose phrase index so audio maps correctly when available
         int phraseIndex = Random.Range(0, praisePhrases.Length);
 
+        // pick a random configured spawn area (RectTransform)
+        RectTransform chosenArea = areas[Random.Range(0, areas.Count)];
+        if (chosenArea == null) return;
+
+        // compute canvas-local anchored position for a random point inside the chosen rect
+        Vector2 anchoredCanvasPos = RandomPointInsideRectTransformToCanvasLocal(chosenArea, canvasRT, praiseAreaPadding);
+
         // create text
         praiseGO = new GameObject("AutoPraiseText", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
         var prtText = praiseGO.GetComponent<RectTransform>();
@@ -393,20 +411,7 @@ public class ZumbaFeedback : MonoBehaviour
         prtText.SetParent(canvasRT, false);
         prtText.anchorMin = prtText.anchorMax = new Vector2(0.5f, 0.5f);
         prtText.pivot = new Vector2(0.5f, 0.5f);
-
-        // Compute random local position inside canvas rect using padding
-        Rect canvasRect = canvasRT.rect;
-        float halfW = canvasRect.width * 0.5f;
-        float halfH = canvasRect.height * 0.5f;
-        float minX = -halfW + praiseScreenPadding.x;
-        float maxX = halfW - praiseScreenPadding.x;
-        float minY = -halfH + praiseScreenPadding.y;
-        float maxY = halfH - praiseScreenPadding.y;
-        // clamp to reasonable values if padding is large
-        if (minX > maxX) { minX = -halfW * 0.5f; maxX = halfW * 0.5f; }
-        if (minY > maxY) { minY = -halfH * 0.5f; maxY = halfH * 0.5f; }
-        Vector2 randomPos = new Vector2(Random.Range(minX, maxX), Random.Range(minY, maxY));
-        prtText.anchoredPosition = randomPos;
+        prtText.anchoredPosition = anchoredCanvasPos;
 
         // set text properties
         text.text = praisePhrases[phraseIndex];
@@ -438,7 +443,7 @@ public class ZumbaFeedback : MonoBehaviour
                 pprt.SetParent(canvasRT, false);
                 pprt.anchorMin = pprt.anchorMax = new Vector2(0.5f, 0.5f);
                 pprt.pivot = new Vector2(0.5f, 0.5f);
-                pprt.anchoredPosition = randomPos;
+                pprt.anchoredPosition = anchoredCanvasPos;
                 // preserve prefab target scale but start tiny for pop-in
                 pprt.localScale = prefabParticleLocalScale * popInitialScale;
                 StartCoroutine(AnimatePopIn(pprt, prefabParticleLocalScale, flashDuration, flashScale));
@@ -446,7 +451,7 @@ public class ZumbaFeedback : MonoBehaviour
             else
             {
                 praiseParticle.transform.SetParent(canvasRT, false);
-                praiseParticle.transform.localPosition = (Vector3)randomPos;
+                praiseParticle.transform.localPosition = (Vector3)anchoredCanvasPos;
                 praiseParticle.transform.localScale = prefabParticleLocalScale * popInitialScale;
                 StartCoroutine(AnimatePopIn(praiseParticle.transform, prefabParticleLocalScale, flashDuration, flashScale));
             }
@@ -456,6 +461,60 @@ public class ZumbaFeedback : MonoBehaviour
 
         // schedule destruction after praiseDuration (will scale down then destroy)
         StartCoroutine(DestroyObjectsAfterDelay(new GameObject[] { praiseParticle, praiseGO }, praiseDuration));
+    }
+
+    // Collect RectTransform children from the configured parent GameObject
+    List<RectTransform> GetSpawnAreasFromParent()
+    {
+        var list = new List<RectTransform>();
+        if (praiseSpawnAreasParent == null) return list;
+
+        var parentTransform = praiseSpawnAreasParent.transform;
+        for (int i = 0; i < parentTransform.childCount; i++)
+        {
+            var child = parentTransform.GetChild(i);
+            if (child == null) continue;
+            var rt = child.GetComponent<RectTransform>();
+            if (rt != null)
+                list.Add(rt);
+        }
+        return list;
+    }
+
+    // Pick a random point inside a RectTransform's rect (respecting optional padding), convert to canvas local anchored coordinates.
+    Vector2 RandomPointInsideRectTransformToCanvasLocal(RectTransform areaRT, RectTransform canvasRT, float padding)
+    {
+        if (areaRT == null || canvasRT == null)
+            return Vector2.zero;
+
+        Rect rect = areaRT.rect;
+
+        // clamp padding so random range remains valid
+        float halfW = rect.width * 0.5f;
+        float halfH = rect.height * 0.5f;
+        float padX = Mathf.Clamp(padding, 0f, halfW - 0.01f);
+        float padY = Mathf.Clamp(padding, 0f, halfH - 0.01f);
+
+        float minX = rect.xMin + padX;
+        float maxX = rect.xMax - padX;
+        float minY = rect.yMin + padY;
+        float maxY = rect.yMax - padY;
+
+        // if padding too large, fall back to full rect
+        if (minX > maxX) { minX = rect.xMin; maxX = rect.xMax; }
+        if (minY > maxY) { minY = rect.yMin; maxY = rect.yMax; }
+
+        Vector2 localPoint = new Vector2(Random.Range(minX, maxX), Random.Range(minY, maxY));
+
+        // Convert local point (areaRT local space) to world, then to canvas local
+        Vector3 worldPos = areaRT.TransformPoint(localPoint);
+        Camera cam = null;
+        if (targetCanvas.renderMode == RenderMode.ScreenSpaceCamera || targetCanvas.renderMode == RenderMode.WorldSpace)
+            cam = targetCanvas.worldCamera;
+
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(cam, worldPos);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRT, screenPoint, cam, out Vector2 canvasLocalPoint);
+        return canvasLocalPoint;
     }
 
     // Plays a praise audio clip mapped to the phrase index (if available).
@@ -581,12 +640,12 @@ public class ZumbaFeedback : MonoBehaviour
         }
     }
 
-    // Build the corner star display to match Menu.song (authoritative count).
+    // Build the star display to match Menu.song (authoritative count).
     public void RefreshStarsFromMenu()
     {
-        if (starContainer == null)
+        if (starOrigin == null)
         {
-            Debug.LogWarning("ZumbaFeedback: starContainer not set.");
+            Debug.LogWarning("ZumbaFeedback: starOrigin not set.");
             return;
         }
 
@@ -597,35 +656,35 @@ public class ZumbaFeedback : MonoBehaviour
             InstantiateSmallStar(1f);
 
         displayedStarCount = count;
-        ArrangeStarsInCircle();
+        ArrangeStarsInStack();
     }
 
     void ClearStars()
     {
-        if (starContainer == null) return;
-        for (int i = starContainer.childCount - 1; i >= 0; i--)
-            DestroyImmediate(starContainer.GetChild(i).gameObject);
+        if (starOrigin == null) return;
+        for (int i = starOrigin.childCount - 1; i >= 0; i--)
+            DestroyImmediate(starOrigin.GetChild(i).gameObject);
         displayedStarCount = 0;
         lastFillingStarImage = null;
     }
 
     void AddSmallStarToContainer()
     {
-        if (starContainer == null) return;
+        if (starOrigin == null) return;
 
         // avoid overflowing beyond maxStars
         if (displayedStarCount >= maxStars) return;
 
         InstantiateSmallStar(1f);
         displayedStarCount++;
-        ArrangeStarsInCircle();
+        ArrangeStarsInStack();
     }
 
-    // Instantiate a small star in the corner container.
+    // Instantiate a small star in the star origin.
     // initialFill: 0..1 - for a filling star use 0, for already-completed use 1.
     Image InstantiateSmallStar(float initialFill)
     {
-        var go = new GameObject("Star_" + (starContainer != null ? (starContainer.childCount + 1).ToString() : "0"), typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        var go = new GameObject("Star_" + (starOrigin != null ? (starOrigin.childCount + 1).ToString() : "0"), typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         var rt = go.GetComponent<RectTransform>();
         var img = go.GetComponent<Image>();
         img.sprite = starSprite;
@@ -638,76 +697,77 @@ public class ZumbaFeedback : MonoBehaviour
         img.fillClockwise = true;
         img.fillAmount = Mathf.Clamp01(initialFill);
 
-        if (starContainer != null)
+        if (starOrigin != null)
         {
-            rt.SetParent(starContainer, false);
+            rt.SetParent(starOrigin, false);
             rt.sizeDelta = smallStarSize;
             rt.pivot = new Vector2(0.5f, 0.5f);
         }
         else
         {
-            // safety: put under canvas if container missing
+            // safety: put under canvas if origin missing
             var canvasRT = targetCanvas != null ? targetCanvas.GetComponent<RectTransform>() : null;
             if (canvasRT != null)
             {
                 rt.SetParent(canvasRT, false);
                 rt.sizeDelta = smallStarSize;
                 rt.pivot = new Vector2(0.5f, 0.5f);
-                rt.anchoredPosition = new Vector2(-arrangeRadius, -arrangeRadius);
+                rt.anchoredPosition = Vector2.zero;
             }
         }
 
         return img;
     }
 
-    // Arrange children evenly around a circle (can be small cluster in corner)
-    void ArrangeStarsInCircle()
+    // Arrange children in a vertical stack anchored at the starOrigin local (first star at local 0,0).
+    void ArrangeStarsInStack()
     {
-        if (starContainer == null) return;
-        int count = starContainer.childCount;
+        if (starOrigin == null) return;
+        int count = starOrigin.childCount;
         if (count == 0) return;
 
-        // If there's only one star, put it slightly inset from the corner instead of a full circle
+        // If there's only one star, place it at the origin (0,0)
         if (count == 1)
         {
-            var single = starContainer.GetChild(0) as RectTransform;
+            var single = starOrigin.GetChild(0) as RectTransform;
             if (single != null)
-                single.anchoredPosition = new Vector2(-arrangeRadius, -arrangeRadius);
+                single.anchoredPosition = Vector2.zero;
             return;
         }
 
+        float step = smallStarSize.y + verticalSpacing;
+
         for (int i = 0; i < count; i++)
         {
-            var child = starContainer.GetChild(i) as RectTransform;
+            var child = starOrigin.GetChild(i) as RectTransform;
             if (child == null) continue;
 
-            float angleDeg = i * (360f / count);
-            float rad = angleDeg * Mathf.Deg2Rad;
-            Vector2 pos = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * arrangeRadius;
-            child.anchoredPosition = pos;
+            // place stars from bottom (i = 0 at origin) upwards (increasing Y)
+            float y = i * step;
+            child.anchoredPosition = new Vector2(0f, y);
             child.localScale = Vector3.one;
         }
     }
 
-    // Compute local position inside starContainer for a given index (circular layout)
+    // Compute local position inside starOrigin for a given index (vertical stacked layout)
     Vector2 ComputeStarLocalPositionInContainer(int index, int totalCount)
     {
         if (totalCount <= 1)
-            return new Vector2(-arrangeRadius, -arrangeRadius);
-
-        float angleDeg = index * (360f / totalCount);
-        float rad = angleDeg * Mathf.Deg2Rad;
-        return new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * arrangeRadius;
-    }
-
-    // Convert a local position inside the starContainer into canvas local coordinates
-    Vector2 ContainerLocalToCanvasLocal(Vector2 containerLocalPoint, RectTransform canvasRT)
-    {
-        if (starContainer == null || canvasRT == null)
             return Vector2.zero;
 
-        // Get world position of the point inside container, then convert to canvas local point
-        Vector3 worldPos = starContainer.TransformPoint(containerLocalPoint);
+        float step = smallStarSize.y + verticalSpacing;
+        float y = index * step;
+        return new Vector2(0f, y);
+    }
+
+    // Convert a local position inside the starOrigin into canvas local coordinates
+    Vector2 ContainerLocalToCanvasLocal(Vector2 containerLocalPoint, RectTransform canvasRT)
+    {
+        if (starOrigin == null || canvasRT == null)
+            return Vector2.zero;
+
+        // Get world position of the point inside origin, then convert to canvas local point
+        Vector3 worldPos = starOrigin.TransformPoint(containerLocalPoint);
         Camera cam = null;
         if (targetCanvas.renderMode == RenderMode.ScreenSpaceCamera || targetCanvas.renderMode == RenderMode.WorldSpace)
             cam = targetCanvas.worldCamera;
